@@ -19,11 +19,16 @@ executable tic-taskell
 
   main-is:             Main.hs
 
-  build-depends:       base         == 4.7.*
-               ,       scotty       == 0.9.*
-               ,       elerea       == 2.7.*
-               ,       lens         == 4.4.*
-               ,       transformers == 0.4.*
+  build-depends:       base                 == 4.7.*
+               ,       scotty               == 0.9.*
+               ,       lens                 == 4.4.*
+               ,       transformers         == 0.4.*
+               ,       unordered-containers == 0.2.*
+               ,       aeson                == 0.7.*
+               ,       http-types           == 0.8.*
+               ,       directory            == 1.2.*
+               ,       wai                  == 3.0.*
+               ,       text                 == 1.1.*
 
   hs-source-dirs:      src/
 

@@ -1,0 +1,17 @@
+.container {
+	margin-bottom: 20px;
+}
+
+#messagebox {
+	padding: 10px;
+	border-radius: 3px;
+	margin-bottom: 20px;
+}
+
+.tictacgrid {
+	border-width: 1px;
+	border-color: #333;
+	border-style: solid;
+
+	height: 200px;
+}

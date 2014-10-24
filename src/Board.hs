@@ -78,15 +78,12 @@ validMoves b =
             isEmpty x y b]
 
 -- | Checking if a set of coordinates is a winner.
-findWinnerCoords :: Board -> [(Int, Int)] -> Maybe BoardState
+findWinnerCoords :: Board -> [(Int, Int)] -> BoardState
 findWinnerCoords b coords
-  | length coords /= 3 = Nothing
-  | otherwise =
-    if all (== X) vals
-      then Just X
-      else if all (== O) vals
-        then Just O
-        else Nothing
+  | length coords /= 3 = Nil
+  | all (== X) vals    = X
+  | all (== O) vals    = O
+  | otherwise          = Nil
   where vals = for coords (\(row, col) -> boardPull row col b)
 
 -- | Generating a list of coordinates to check for a win.
@@ -104,21 +101,28 @@ winnableCoords =
 
 -- | Finding the winner of a @'Board'@. If a winner does not yet exist, then it
 --   simply returns @'Nothing'@.
-findWinner :: Board -> Maybe BoardState
+findWinner :: Board -> BoardState
 findWinner b
-  | length winners == 0 = Nothing
-  | otherwise           = Just $ head winners
-  where winners = catMaybes $ map (findWinnerCoords b) winnableCoords
+  | length winners == 0 = Nil
+  | otherwise           = head winners
+  where winners = filter (/= Nil) $ map (findWinnerCoords b) winnableCoords
 
 -- | Checking if a game is finished.
 isOver :: Board -> Bool
 isOver b =
-  findWinner b /= Nothing || (length $ validMoves b) == 0
+  findWinner b /= Nil || (length $ validMoves b) == 0
 
 -- | Changing the state of a @'Board'@ at a given location.
 boardPush :: Int -> Int -> BoardState -> Board -> Board
 boardPush row col v b =
   Board $ state b & ix (from2D row col) .~ v
+
+-- | Determining the turn of the board.
+determineTurn :: Board -> BoardState
+determineTurn board
+  | s == 0    = X
+  | otherwise = O
+  where s = sum $ map boardStateToInt $ state board
 
 -- | Checking if a given move can be made on a board.
 canMakeMove :: Int -> Int -> BoardState -> Board -> Bool
@@ -142,5 +146,5 @@ updateBoard (row, col, v) b =
       let b' = boardPush row col v b
           mw = findWinner b' in
         case mw of
-          Nothing -> (b', "Move made!")
-          Just w  -> (b', "Player " ++ [boardStateToChar w] ++ " has won!")
+          Nil -> (b', "Move made!")
+          w   -> (b', "Player " ++ [boardStateToChar w] ++ " has won!")
