@@ -2,10 +2,13 @@ module Board where
 
 --------------------
 -- Global Imports --
-import FRP.Elerea.Simple
 import Control.Lens
 import Data.Monoid
-import Data.String
+import Data.Maybe
+
+-------------------
+-- Local Imports --
+import Utils
 
 ----------
 -- Code --
@@ -46,6 +49,12 @@ type BoardUpdate = (Int, Int, BoardState)
 -- | The representation of the board itself.
 data Board = Board { state :: [BoardState] }
 
+-- | Displaying a board in a pretty fashion in text. Primarily meant for debug
+--   purposes.
+displayBoard :: Board -> String
+displayBoard b =
+  intersperse (map boardStateToChar $ state b) '\n' 3
+
 -- | Converting a 2D coord to a 1D coord.
 from2D :: Int -> Int -> Int
 from2D row col =
@@ -68,10 +77,38 @@ validMoves b =
             y <- [0 .. boardSize - 1],
             isEmpty x y b]
 
+-- | Checking if a set of coordinates is a winner.
+findWinnerCoords :: Board -> [(Int, Int)] -> Maybe BoardState
+findWinnerCoords b coords
+  | length coords /= 3 = Nothing
+  | otherwise =
+    if all (== X) vals
+      then Just X
+      else if all (== O) vals
+        then Just O
+        else Nothing
+  where vals = for coords (\(row, col) -> boardPull row col b)
+
+-- | Generating a list of coordinates to check for a win.
+winnableCoords :: [[(Int, Int)]]
+winnableCoords =
+  generateRows ++
+  generateCols ++
+  generateDiags
+  where generateRows  = [[(row, col) | col <- [0 .. boardSize - 1]] | row <- [0 .. boardSize - 1]]
+        generateCols  = [[(row, col) | row <- [0 .. boardSize - 1]] | col <- [0 .. boardSize - 1]]
+        generateDiags =
+          [ [(0, 0), (1, 1), (2, 2)]
+          , [(0, 2), (1, 1), (2, 0)]
+          ]
+
 -- | Finding the winner of a @'Board'@. If a winner does not yet exist, then it
 --   simply returns @'Nothing'@.
 findWinner :: Board -> Maybe BoardState
-findWinner _ = Nothing
+findWinner b
+  | length winners == 0 = Nothing
+  | otherwise           = Just $ head winners
+  where winners = catMaybes $ map (findWinnerCoords b) winnableCoords
 
 -- | Checking if a game is finished.
 isOver :: Board -> Bool
@@ -83,20 +120,27 @@ boardPush :: Int -> Int -> BoardState -> Board -> Board
 boardPush row col v b =
   Board $ state b & ix (from2D row col) .~ v
 
+-- | Checking if a given move can be made on a board.
+canMakeMove :: Int -> Int -> BoardState -> Board -> Bool
+canMakeMove row col v b
+  | not $ isEmpty row col b = False
+  | isOver b                = False
+  | v == Nil                = False
+  | otherwise               = True
+
 -- | Creating the default, empty, board.
 defaultBoard :: Board
 defaultBoard =
   Board $ replicate (boardSize * boardSize) Nil
 
 -- | The function to updating a board.
-updateBoard :: IsString a => BoardUpdate -> (Board, a) -> (Board, a)
-updateBoard (  _,   _,  Nil)      p = p
-updateBoard (row, col, move) (b, _)
-  | not $ isEmpty row col b = (b, "Cannot move there!")
-  | isOver b         = (b, "The game is already over!")
-  | otherwise        = (boardPush row col move b, "Move performed!")
-
--- | The front-end for the @'Board' 'SignalGen'@.
-boardSignalGenerator :: IsString a => Signal BoardUpdate -> SignalGen (Signal (Board, a))
-boardSignalGenerator sBoardUpdate =
-  transfer (defaultBoard, "") updateBoard sBoardUpdate
+updateBoard :: BoardUpdate -> Board -> (Board, String)
+updateBoard (row, col, v) b =
+  if not $ canMakeMove row col v b
+    then (b, "Cannot make that move!")
+    else
+      let b' = boardPush row col v b
+          mw = findWinner b' in
+        case mw of
+          Nothing -> (b', "Move made!")
+          Just w  -> (b', "Player " ++ [boardStateToChar w] ++ " has won!")

@@ -2,15 +2,18 @@ module Server where
 
 --------------------
 -- Global Imports --
-import Control.Monad.IO.Class
-import Data.Monoid
+import Data.IORef
 import Web.Scotty
+
+-------------------
+-- Local Imports --
+import Board
 
 ----------
 -- Code --
 
 -- | The definition of the server itself.
-server :: ScottyM ()
-server =
+server :: IORef Board -> ScottyM ()
+server _ =
   get "/" $
     html "<h1>Nothing here yet.</h1>"
