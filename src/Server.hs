@@ -89,12 +89,13 @@ postPerformMove boardRef =
     postRequest <- jsonData :: ActionM PushRequest
     board <- liftIO $ readIORef boardRef
 
-    let (done, board', message) = updateBoard ( row postRequest
-                                              , col postRequest
+    let (done, board', message) = updateBoard ( ( row postRequest
+                                                , col postRequest
+                                                )
                                               , X
                                               )
                                               board
-    
+
     when done $
       liftIO $ writeIORef boardRef board'
 

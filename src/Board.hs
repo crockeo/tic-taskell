@@ -17,6 +17,9 @@ import Utils
 boardSize :: Int
 boardSize = 3
 
+-- | A type to represent a coordinate on the board (in the form of (row, col)).
+type Point = (Int, Int)
+
 -- | A datatype to represent the state of a board.
 data BoardState = X
                 | O
@@ -44,7 +47,7 @@ boardStateToInt   O = -1
 boardStateToInt Nil =  0
 
 -- | A type to represent an update to the @'Board'@.
-type BoardUpdate = (Int, Int, BoardState)
+type BoardUpdate = (Point, BoardState)
 
 -- | The representation of the board itself.
 data Board = Board { state :: [BoardState] }
@@ -56,38 +59,38 @@ displayBoard b =
   intersperse (map boardStateToChar $ state b) '\n' 3
 
 -- | Converting a 2D coord to a 1D coord.
-from2D :: Int -> Int -> Int
-from2D row col =
+from2D :: Point -> Int
+from2D (row, col) =
   row * boardSize + col
 
 -- | Accessing an element in the @'Board'@ through a 2D coord.
-boardPull :: Int -> Int -> Board -> BoardState
-boardPull row col b =
-  state b ^. ix (from2D row col)
+boardPull :: Point -> Board -> BoardState
+boardPull p b =
+  state b ^. ix (from2D p)
 
 -- | Checking if a location in the board is empty.
-isEmpty :: Int -> Int -> Board -> Bool
-isEmpty row col b =
-  boardPull row col b == Nil
+isEmpty :: Point -> Board -> Bool
+isEmpty p b =
+  boardPull p b == Nil
 
 -- | Getting a list of valid locations to move.
-validMoves :: Board -> [(Int, Int)]
+validMoves :: Board -> [Point]
 validMoves b =
   [(x, y) | x <- [0 .. boardSize - 1],
             y <- [0 .. boardSize - 1],
-            isEmpty x y b]
+            isEmpty (x, y) b]
 
 -- | Checking if a set of coordinates is a winner.
-findWinnerCoords :: Board -> [(Int, Int)] -> BoardState
+findWinnerCoords :: Board -> [Point] -> BoardState
 findWinnerCoords b coords
   | length coords /= 3 = Nil
   | all (== X) vals    = X
   | all (== O) vals    = O
   | otherwise          = Nil
-  where vals = for coords (\(row, col) -> boardPull row col b)
+  where vals = for coords (\p -> boardPull p b)
 
 -- | Generating a list of coordinates to check for a win.
-winnableCoords :: [[(Int, Int)]]
+winnableCoords :: [[Point]]
 winnableCoords =
   generateRows ++
   generateCols ++
@@ -113,9 +116,9 @@ isOver b =
   findWinner b /= Nil || (length $ validMoves b) == 0
 
 -- | Changing the state of a @'Board'@ at a given location.
-boardPush :: Int -> Int -> BoardState -> Board -> Board
-boardPush row col v b =
-  Board $ state b & ix (from2D row col) .~ v
+boardPush :: (Int, Int) -> BoardState -> Board -> Board
+boardPush p v b =
+  Board $ state b & ix (from2D p) .~ v
 
 -- | Determining the turn of the board.
 determineTurn :: Board -> BoardState
@@ -125,9 +128,9 @@ determineTurn board
   where s = sum $ map boardStateToInt $ state board
 
 -- | Checking if a given move can be made on a board.
-canMakeMove :: Int -> Int -> BoardState -> Board -> Bool
-canMakeMove row col v b
-  | not $ isEmpty row col b = False
+canMakeMove :: Point -> BoardState -> Board -> Bool
+canMakeMove p v b
+  | not $ isEmpty p b = False
   | isOver b                = False
   | v == Nil                = False
   | otherwise               = True
@@ -139,11 +142,11 @@ defaultBoard =
 
 -- | The function to updating a board.
 updateBoard :: BoardUpdate -> Board -> (Bool, Board, String)
-updateBoard (row, col, v) b =
-  if not $ canMakeMove row col v b
+updateBoard (p, v) b =
+  if not $ canMakeMove p v b
     then (False, b, "Cannot make that move!")
     else
-      let b' = boardPush row col v b
+      let b' = boardPush p v b
           mw = findWinner b' in
         case mw of
           Nil -> (True, b', "Move made!")
