@@ -103,15 +103,6 @@ postPerformMove boardRef =
                         , refresh = True
                         }
 
-    {-if not $ canMakeMove (row postRequest) (col postRequest) X board-}
-      {-then json $ PushResponse { error   = True-}
-                               {-, msg     = "Could not perform move!"-}
-                               {-, refresh = False-}
-                               {-}-}
-      {-else do-}
-        {-msg <- -}
-    {-json ("" :: String)-}
-
 -- | Responding to any request that doesn't get caught earlier on with a 404.
 handle404 :: ScottyM ()
 handle404 =
