@@ -69,8 +69,8 @@ function handleOutput(data) {
 function respondClick() {
     if (localState.canMove) {
         var json = {
-            row: $(this).attr('data-row'),
-            col: $(this).attr('data-col')
+            row: parseInt($(this).attr('data-row')),
+            col: parseInt($(this).attr('data-col'))
         };
 
         localState.canMove = false;

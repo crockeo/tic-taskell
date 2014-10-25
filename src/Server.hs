@@ -8,6 +8,7 @@ import Prelude hiding (error)
 import Network.HTTP.Types.Status
 import Control.Monad.IO.Class
 import Data.Aeson.Types
+import Control.Monad
 import Data.Aeson.TH
 import Data.IORef
 import Web.Scotty
@@ -32,6 +33,14 @@ data PullResponse = PullResponse { over   :: Bool
 
 $(deriveJSON defaultOptions { constructorTagModifier = map toLower }
              ''PullResponse)
+
+-- | The type to represent a POST request to make a move.
+data PushRequest = PushRequest { row :: Int
+                               , col :: Int
+                               }
+
+$(deriveJSON defaultOptions { constructorTagModifier = map toLower }
+             ''PushRequest)
 
 -- | A type to represent the response to API push requests.
 data PushResponse = PushResponse { error   :: Bool
@@ -75,9 +84,33 @@ postResetBoard boardRef =
 
 -- | Dealing with a post request to perform a move.
 postPerformMove :: IORef Board -> ScottyM ()
-postPerformMove _ =
+postPerformMove boardRef =
   post "/api/push/move" $ do
-    json ("" :: String)
+    postRequest <- jsonData :: ActionM PushRequest
+    board <- liftIO $ readIORef boardRef
+
+    let (done, board', message) = updateBoard ( row postRequest
+                                              , col postRequest
+                                              , X
+                                              )
+                                              board
+    
+    when done $
+      liftIO $ writeIORef boardRef board'
+
+    json $ PushResponse { error   = not done
+                        , msg     = message
+                        , refresh = True
+                        }
+
+    {-if not $ canMakeMove (row postRequest) (col postRequest) X board-}
+      {-then json $ PushResponse { error   = True-}
+                               {-, msg     = "Could not perform move!"-}
+                               {-, refresh = False-}
+                               {-}-}
+      {-else do-}
+        {-msg <- -}
+    {-json ("" :: String)-}
 
 -- | Responding to any request that doesn't get caught earlier on with a 404.
 handle404 :: ScottyM ()
