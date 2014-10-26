@@ -4,7 +4,6 @@ module Board where
 -- Global Imports --
 import Control.Lens
 import Data.Monoid
-import Data.Maybe
 
 -------------------
 -- Local Imports --
