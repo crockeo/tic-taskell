@@ -28,7 +28,6 @@ function withState(fn) {
 
 // Redrawing the board with a given state.
 function drawBoard() {
-    console.log(localState);
     for (var i = 0; i < 9; i++) {
         var lc;
         if (localState.state[i] == 0)
