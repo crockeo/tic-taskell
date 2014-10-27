@@ -146,7 +146,11 @@ updateBoard (p, v) b =
     then (False, b, "Cannot make that move!")
     else
       let b' = boardPush p v b
+          o  = isOver b'
           mw = findWinner b' in
-        case mw of
-          Nil -> (True, b', "Move made!")
-          w   -> (True, b', "Player " ++ [boardStateToChar w] ++ " has won!")
+        if not o
+          then (True, b', "Move made!")
+          else
+            case mw of
+              Nil -> (True, b', "It's a tie!")
+              w   -> (True, b', "Player " ++ [boardStateToChar w] ++ " has won!")

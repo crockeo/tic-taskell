@@ -92,7 +92,7 @@ postPerformMove boardRef =
     let (done, board', message) = updateBoard ( ( row postRequest
                                                 , col postRequest
                                                 )
-                                              , X
+                                              , determineTurn board
                                               )
                                               board
 
