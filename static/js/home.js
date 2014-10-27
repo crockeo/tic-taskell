@@ -50,7 +50,7 @@ function updateLocalState(state) {
         localState.winner = data.winner;
         
         if (localState.turn != 1 || localState.over)
-            localState.canMove = true;
+            localState.canMove = false;
         else
             localState.canMove = true;
 
@@ -72,10 +72,10 @@ function respondClick() {
             col: parseInt($(this).attr('data-col'))
         };
 
-        //localState.canMove = false;
-        //$('#messagebox').html('AI is moving...');
+        localState.canMove = false;
+        $('#messagebox').html('AI is moving...');
 
-        //localState.state[parseInt($(this).attr('data-idx'))] = config.p1;
+        localState.state[parseInt($(this).attr('data-idx'))] = config.p1;
         drawBoard();
 
         $.ajax({

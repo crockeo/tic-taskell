@@ -15,6 +15,7 @@ import Data.Char
 
 -------------------
 -- Local Imports --
+import Minimax
 import Static
 
 import qualified Board as B (state)
@@ -95,12 +96,8 @@ postPerformMove boardRef =
     postRequest <- jsonData :: ActionM PushRequest
     board <- liftIO $ readIORef boardRef
 
-    let ePair = updateBoard ( ( row postRequest
-                            , col postRequest
-                            )
-                            , determineTurn board
-                            )
-                            board
+    let ePair = do (board', _) <- updateBoard ((row postRequest, col postRequest), X) board
+                   updateBoard (findOptimalMove O board', O) board'
 
     case ePair of
       Left message -> json $ PushResponse { error   = False
