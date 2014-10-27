@@ -81,10 +81,17 @@ postResetBoard boardRef =
                         , refresh = True
                         }
 
+-- | Recovering from getting an invalid @'PushRequest'@.
+rescueFromPushRequest _ =
+  json $ PushResponse { error   = True
+                      , msg     = "There was an error in processing the request."
+                      , refresh = False
+                      }
+
 -- | Dealing with a post request to perform a move.
 postPerformMove :: IORef Board -> ScottyM ()
 postPerformMove boardRef =
-  post "/api/push/move" $ do
+  post "/api/push/move" $ (flip rescue) rescueFromPushRequest $ do
     postRequest <- jsonData :: ActionM PushRequest
     board <- liftIO $ readIORef boardRef
 
