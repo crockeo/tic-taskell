@@ -146,17 +146,17 @@ defaultBoard =
   Board $ replicate (boardSize * boardSize) Nil
 
 -- | The function to updating a board.
-updateBoard :: BoardUpdate -> Board -> (Bool, Board, String)
+updateBoard :: BoardUpdate -> Board -> Either String (Board, String)
 updateBoard (p, v) b =
   if not $ canMakeMove p v b
-    then (False, b, "Cannot make that move!")
+    then Left "Cannot make that move!"
     else
       let b' = boardPush p v b
           o  = isOver b'
           mw = findWinner b' in
         if not o
-          then (True, b', "Move made!")
+          then Right (b', "Move made!")
           else
             case mw of
-              Nil -> (True, b', "It's a tie!")
-              w   -> (True, b', "Player " ++ [boardStateToChar w] ++ " has won!")
+              Nil -> Right (b', "It's a tie!")
+              w   -> Right (b', "Player " ++ [boardStateToChar w] ++ " has won!")
