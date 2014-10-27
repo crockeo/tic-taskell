@@ -45,6 +45,12 @@ boardStateToInt   X =  1
 boardStateToInt   O = -1
 boardStateToInt Nil =  0
 
+-- | Getting the other @'BoardState'@.
+otherState :: BoardState -> BoardState
+otherState   X = O
+otherState   O = X
+otherState Nil = Nil
+
 -- | A type to represent an update to the @'Board'@.
 type BoardUpdate = (Point, BoardState)
 
