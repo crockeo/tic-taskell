@@ -136,9 +136,8 @@ determineTurn board
 canMakeMove :: Point -> BoardState -> Board -> Bool
 canMakeMove p v b
   | not $ isEmpty p b = False
-  | isOver b                = False
-  | v == Nil                = False
-  | otherwise               = True
+  | v == Nil          = False
+  | otherwise         = True
 
 -- | Creating the default, empty, board.
 defaultBoard :: Board
