@@ -1,5 +1,5 @@
 name:                tic-taskell
-version:             0.0.0.0
+version:             1.0.0.0
 synopsis:            Tic tac toe written in Haskell, accessible through a web API.
 description:         Tic tac toe written in Haskell, accessible through a web API.
 homepage:            http://github.com/crockeo/tic-taskell
