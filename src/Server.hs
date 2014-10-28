@@ -83,6 +83,7 @@ postResetBoard boardRef =
                         }
 
 -- | Recovering from getting an invalid @'PushRequest'@.
+rescueFromPushRequest :: a -> ActionM ()
 rescueFromPushRequest _ =
   json $ PushResponse { error   = True
                       , msg     = "There was an error in processing the request."
